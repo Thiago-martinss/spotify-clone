@@ -1,58 +1,62 @@
 const mongoose = require('mongoose');
 
 //Schema
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-  },
-  password: {
-    type: String,
-    required: true,
-    minLength: 6,
-  },
-  profilePicture: {
-    type: String,
-    default:
-      'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
-  },
-  isAdmin: {
-    type: Boolean,
-    default: false,
-  },
-  likedSongs: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Song',
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
     },
-  ],
-  likedAlbums: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Album',
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
     },
-  ],
-  followedPlaylists: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Playlist',
+    password: {
+      type: String,
+      required: true,
+      minLength: 6,
     },
-  ],
-  followedArtists: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Artist',
+    profilePicture: {
+      type: String,
+      default:
+        'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
     },
-  ],
-  timestamps: true,
-});
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    likedSongs: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Song',
+      },
+    ],
+    likedAlbums: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Album',
+      },
+    ],
+    followedPlaylists: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Playlist',
+      },
+    ],
+    followedArtists: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Artist',
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
 
 // Compille to model
 const User = mongoose.model('User', userSchema);
