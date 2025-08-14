@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
+const generateToken = require('../utils/generateToken');
 const User = require('../models/User');
-const bcrypt = require('bcryptjs');
 
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -35,7 +35,7 @@ const loginUser = asyncHandler(async (req, res) => {
       email: user.email,
       isAdmin: user.isAdmin,
       profilePicture: user.profilePicture,
-      token: 'token here',
+      token: generateToken(user._id),
     });
   } else {
     res.status(StatusCodes.BAD_REQUEST);
