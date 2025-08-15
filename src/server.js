@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const {StatusCodes} = require('http-status-codes');
 const dotenv = require('dotenv');
 const userRouter = require('./routes/userRoutes');
+const artistRouter = require('./routes/artistRoutes');
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ mongoose
 app.use(express.json());
 //Routes
 app.use("/api/users", userRouter);
+app.use("/api/artists", artistRouter);
 
 //Error handling middleware
 app.use(( req, res, next) => {

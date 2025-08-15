@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
 const generateToken = require('../utils/generateToken');
+const { uploadToCloudinary } = require('../utils/cloudinaryUpload');
 const User = require('../models/User');
 
 const registerUser = asyncHandler(async (req, res) => {
