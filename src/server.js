@@ -17,11 +17,13 @@ mongoose
     console.log(error);
   });
 
+
+
+
 //Pass incoming data
 app.use(express.json());
-
 //Routes
-app.use('/api/users', userRouter);
+app.use("/api/users", userRouter);
 
 //Error handling middleware
 app.use(( req, res, next) => {

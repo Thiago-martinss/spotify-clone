@@ -1,29 +1,29 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
-//Schema
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "Name is required"],
       trim: true,
     },
     email: {
       type: String,
-      required: true,
+      required: [true, "Email is required"],
       unique: true,
       trim: true,
+      lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"],
     },
     password: {
       type: String,
-      required: true,
-      minLength: 6,
+      required: [true, "Password is required"],
+      minlength: [6, "Password must be at least 6 characters"],
     },
     profilePicture: {
       type: String,
-      default:
-        'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
+      default: 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
     },
     isAdmin: {
       type: Boolean,
@@ -32,50 +32,48 @@ const userSchema = new mongoose.Schema(
     likedSongs: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Song',
+        ref: "Song",
       },
     ],
     likedAlbums: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Album',
-      },
-    ],
-    followedPlaylists: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Playlist',
+        ref: "Album",
       },
     ],
     followedArtists: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Artist',
+        ref: "Artist",
+      },
+    ],
+    followedPlaylists: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Playlist",
       },
     ],
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-//Method to compare password 
+// Method to compare password with hashed password
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-//Encrypt password
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    next();
+// Hash password before saving
+userSchema.pre("save", async function (next) {
+  // Only hash password if it's modified
+  if (!this.isModified("password")) {
+    return next();
   }
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
-
 });
 
-// Compille to model
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;

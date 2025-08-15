@@ -1,50 +1,44 @@
 const mongoose = require('mongoose');
 
-//Schema
 const songSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, 'Song title is required'],
       trim: true,
     },
     artist: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Artist',
-      required: true,
+      required: [true, 'Artist is required'],
     },
-    album: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Album',
-      },
-    ],
+    album: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Album',
+    },
     duration: {
       type: Number,
-      required: true,
+      required: [true, 'Song duration is required'],
     },
     audioUrl: {
       type: String,
-      required: true,
+      required: [true, 'Audio URL is required'],
     },
     coverImage: {
       type: String,
-      default:
-        'https://cdn.pixabay.com/photo/2015/04/29/09/33/drums-745077_1280.jpg',
+      default: 'https://res.cloudinary.com/demo/image/upload/v1/sample.jpg',
     },
-    releaseDate: [
-      {
-        type: Date,
-        default: Date.now,
-      },
-    ],
+    releaseDate: {
+      type: Date,
+      default: Date.now,
+    },
     genre: {
       type: String,
       trim: true,
     },
-    followers: {
-      type: Number,
-      default: 0,
+    lyrics: {
+      type: String,
+      trim: true,
     },
     plays: {
       type: Number,
@@ -54,7 +48,6 @@ const songSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-
     isExplicit: {
       type: Boolean,
       default: false,
@@ -66,9 +59,7 @@ const songSchema = new mongoose.Schema(
       },
     ],
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 const Song = mongoose.model('Song', songSchema);
