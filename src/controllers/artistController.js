@@ -53,8 +53,8 @@ const getArtists = asyncHandler(async (req, res) => {
   if (genre) filter.genres = { $in: [genre] };
   if (search) {
     filter.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { bio: { $regex: search, $options: "i" } },
+      { name: { $regex: search, $options: 'i' } },
+      { bio: { $regex: search, $options: 'i' } },
     ];
   }
 
@@ -75,34 +75,32 @@ const getArtists = asyncHandler(async (req, res) => {
   });
 });
 
-
 const getArtistsById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const artist = await Artist.findById(id);
   if (!artist) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error("Artist not found");
+    throw new Error('Artist not found');
   }
   res.status(StatusCodes.OK).json(artist);
 });
-
 
 const updateArtist = asyncHandler(async (req, res) => {
   const { name, bio, genres, isVerified } = req.body;
   const artist = await Artist.findById(req.params.id);
   if (!artist) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error("Artist not found");
+    throw new Error('Artist not found');
   }
   //Update artist details
   artist.name = name || artist.name;
   artist.bio = bio || artist.bio;
   artist.genres = genres || artist.genres;
   artist.isVerified =
-    isVerified !== undefined ? isVerified === "true" : artist.isVerified;
+    isVerified !== undefined ? isVerified === 'true' : artist.isVerified;
   //Update image if provided
   if (req.file) {
-    const result = await uploadToCloudinary(req.file.path, "spotify/artists");
+    const result = await uploadToCloudinary(req.file.path, 'spotify/artists');
     artist.image = result.secure_url;
   }
   //reSave
@@ -114,7 +112,7 @@ const deleteArtist = asyncHandler(async (req, res) => {
   const artist = await Artist.findById(req.params.id);
   if (!artist) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error("Artist not found");
+    throw new Error('Artist not found');
   }
   //Delete all albums by the artist
   await Album.deleteMany({ artist: artist._id });
@@ -122,7 +120,7 @@ const deleteArtist = asyncHandler(async (req, res) => {
   await Song.deleteMany({ artist: artist._id });
   //Delete the artist
   await artist.deleteOne();
-  res.status(StatusCodes.OK).json({ message: "Artist deleted successfully" });
+  res.status(StatusCodes.OK).json({ message: 'Artist deleted successfully' });
 });
 
 const getTopArtists = asyncHandler(async (req, res) => {
@@ -130,4 +128,30 @@ const getTopArtists = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(artists);
 });
 
-  module.exports = { createArtist, getArtists, getArtistsById, updateArtist, deleteArtist, getTopArtists };
+const getArtistTopSongs = asyncHandler(async (req, res) => {
+  const artist = await Artist.findById(req.params.id);
+  if (!artist) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('Artist not found');
+  }
+  const songs = await Song.find({ artist: artist._id })
+    .sort({ plays: -1 })
+    .limit(10)
+    .populate('album', 'title coverImage');
+  if (songs.length > 0) {
+    res.status(StatusCodes.OK).json(songs);
+  } else {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('No songs found for this artist');
+  }
+});
+
+module.exports = {
+  createArtist,
+  getArtists,
+  getArtistsById,
+  updateArtist,
+  deleteArtist,
+  getTopArtists,
+  getArtistTopSongs,
+};
