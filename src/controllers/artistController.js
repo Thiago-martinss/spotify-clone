@@ -110,4 +110,24 @@ const updateArtist = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(updatedArtist);
 });
 
-  module.exports = { createArtist, getArtists, getArtistsById, updateArtist };
+const deleteArtist = asyncHandler(async (req, res) => {
+  const artist = await Artist.findById(req.params.id);
+  if (!artist) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error("Artist not found");
+  }
+  //Delete all albums by the artist
+  await Album.deleteMany({ artist: artist._id });
+  //Delete all songs by the artist
+  await Song.deleteMany({ artist: artist._id });
+  //Delete the artist
+  await artist.deleteOne();
+  res.status(StatusCodes.OK).json({ message: "Artist deleted successfully" });
+});
+
+const getTopArtists = asyncHandler(async (req, res) => {
+  const artists = await Artist.find().sort({ followers: -1 }).limit(10);
+  res.status(StatusCodes.OK).json(artists);
+});
+
+  module.exports = { createArtist, getArtists, getArtistsById, updateArtist, deleteArtist, getTopArtists };
