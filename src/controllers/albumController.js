@@ -157,5 +157,5 @@ const deleteAlbum = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-  createAlbum, getAlbums, getAlbumsById, updateAlbum
+  createAlbum, getAlbums, getAlbumsById, updateAlbum, deleteAlbum,
 };

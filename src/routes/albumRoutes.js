@@ -1,6 +1,6 @@
 const express = require('express');
 const { protect, isAdmin } = require('../middlewares/auth');
-const { createAlbum, getAlbums, getAlbumsById, updateAlbum } = require('../controllers/albumController');
+const { createAlbum, getAlbums, getAlbumsById, updateAlbum, deleteAlbum } = require('../controllers/albumController');
 const upload = require('../middlewares/upload');
 
 const albumRouter = express.Router();
@@ -27,6 +27,8 @@ albumRouter.put(
   upload.single('coverImage'),
   updateAlbum
 );
+
+albumRouter.delete('/:id', protect, isAdmin, deleteAlbum);
 
 
 
