@@ -100,6 +100,18 @@ const getAlbums = asyncHandler(async (req, res) => {
   });
 });
 
+const getAlbumsById = asyncHandler(async (req, res) => {
+  const album = await Album.findById(req.params.id).populate(
+    "artist",
+    "name image"
+  );
+  if (!album) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error("Album not found");
+  }
+  res.status(StatusCodes.OK).json(album);
+});
+
 module.exports = {
-  createAlbum, getAlbums,
+  createAlbum, getAlbums, getAlbumsById
 };

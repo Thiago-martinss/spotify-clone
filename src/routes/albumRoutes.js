@@ -1,6 +1,6 @@
 const express = require('express');
 const { protect, isAdmin } = require('../middlewares/auth');
-const { createAlbum, getAlbums } = require('../controllers/albumController');
+const { createAlbum, getAlbums, getAlbumsById } = require('../controllers/albumController');
 const upload = require('../middlewares/upload');
 
 const albumRouter = express.Router();
@@ -16,5 +16,8 @@ albumRouter.post(
 );
 
 albumRouter.get('/', getAlbums);
+
+albumRouter.get('/:id', getAlbumsById);
+
 
 module.exports = albumRouter;
