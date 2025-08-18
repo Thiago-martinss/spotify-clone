@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const userRouter = require('./routes/userRoutes');
 const artistRouter = require('./routes/artistRoutes');
 const albumRouter = require('./routes/albumRoutes');
+const songRouter = require('./routes/songRoutes');
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use(express.json());
 app.use("/api/users", userRouter);
 app.use("/api/artists", artistRouter);
 app.use("/api/albums", albumRouter);
+app.use("/api/songs", songRouter);
 
 
 //Error handling middleware
