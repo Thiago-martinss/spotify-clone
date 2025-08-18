@@ -10,6 +10,6 @@ const songUpload = upload.fields([
   { name: 'coverImage', maxCount: 1 },
 ]);
 
-songRouter.post('/', protect, isAdmin, upload.single('audio'), createSong);
+songRouter.post("/", protect, isAdmin, songUpload, createSong);
 
 module.exports = songRouter;
