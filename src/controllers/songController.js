@@ -20,31 +20,31 @@ const createSong = asyncHandler(async (req, res) => {
   const artist = await Artist.findById(artistId);
   if (!artist) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error("Artist not found");
+    throw new Error('Artist not found');
   }
   // Check if album exists if albumId is provided
   if (albumId) {
     const album = await Album.findById(albumId);
     if (!album) {
       res.status(StatusCodes.NOT_FOUND);
-      throw new Error("Album not found");
+      throw new Error('Album not found');
     }
   }
   //Upload audio file
   if (!req.files || !req.files.audio) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error("Audio file is required");
+    throw new Error('Audio file is required');
   }
   const audioResult = await uploadToCloudinary(
     req.files.audio[0].path,
-    "spotify/songs"
+    'spotify/songs'
   );
   // Upload cover image if provided
-  let coverImageUrl = "";
+  let coverImageUrl = '';
   if (req.files && req.files.cover) {
     const imageResult = await uploadToCloudinary(
       req.files.cover[0].path,
-      "spotify/covers"
+      'spotify/covers'
     );
     coverImageUrl = imageResult.secure_url;
   }
@@ -57,7 +57,7 @@ const createSong = asyncHandler(async (req, res) => {
     audioUrl: audioResult.secure_url,
     genre,
     lyrics,
-    isExplicit: isExplicit === "true",
+    isExplicit: isExplicit === 'true',
     featuredArtists: featuredArtists ? JSON.parse(featuredArtists) : [],
     coverImage: coverImageUrl,
   });
@@ -82,8 +82,8 @@ const getSongs = asyncHandler(async (req, res) => {
   if (artist) filter.artist = artist;
   if (search) {
     filter.$or = [
-      { title: { $regex: search, $options: "i" } },
-      { genre: { $regex: search, $options: "i" } },
+      { title: { $regex: search, $options: 'i' } },
+      { genre: { $regex: search, $options: 'i' } },
     ];
   }
 
@@ -96,9 +96,9 @@ const getSongs = asyncHandler(async (req, res) => {
     .sort({ releaseDate: -1 })
     .limit(parseInt(limit))
     .skip(skip)
-    .populate("artist", "name image")
-    .populate("album", "name coverImage")
-    .populate("featuredArtists", "name");
+    .populate('artist', 'name image')
+    .populate('album', 'name coverImage')
+    .populate('featuredArtists', 'name');
   res.status(StatusCodes.OK).json({
     songs,
     page: parseInt(page),
@@ -107,6 +107,24 @@ const getSongs = asyncHandler(async (req, res) => {
   });
 });
 
+const getSongById = asyncHandler(async (req, res) => {
+  const song = await Song.findById(req.params.id)
+    .populate('artist', 'name image bio')
+    .populate('album', 'title coverImage releasedDate')
+    .populate('featuredArtists', 'name image');
+  if (song) {
+    //Increment plays count
+    song.plays += 1;
+    await song.save();
+    res.status(StatusCodes.OK).json(song);
+  } else {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('Song not found');
+  }
+});
+
 module.exports = {
-  createSong, getSongs
+  createSong,
+  getSongs, 
+  getSongById
 };
