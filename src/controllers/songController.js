@@ -48,7 +48,7 @@ const createSong = asyncHandler(async (req, res) => {
     );
     coverImageUrl = imageResult.secure_url;
   }
-  //Crete song
+  //Create song
   const song = await Song.create({
     title,
     artist: artistId,
@@ -74,6 +74,39 @@ const createSong = asyncHandler(async (req, res) => {
   res.status(StatusCodes.CREATED).json(song);
 });
 
+const getSongs = asyncHandler(async (req, res) => {
+  const { genre, artist, search, page = 1, limit = 10 } = req.query;
+  //Build filter object
+  const filter = {};
+  if (genre) filter.genre = genre;
+  if (artist) filter.artist = artist;
+  if (search) {
+    filter.$or = [
+      { title: { $regex: search, $options: "i" } },
+      { genre: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  //Count total Songs with filter
+  const count = await Song.countDocuments(filter);
+  //Pagination
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+  //Get Songs
+  const songs = await Song.find(filter)
+    .sort({ releaseDate: -1 })
+    .limit(parseInt(limit))
+    .skip(skip)
+    .populate("artist", "name image")
+    .populate("album", "name coverImage")
+    .populate("featuredArtists", "name");
+  res.status(StatusCodes.OK).json({
+    songs,
+    page: parseInt(page),
+    pages: Math.ceil(count / parseInt(limit)),
+    totalSongs: count,
+  });
+});
+
 module.exports = {
-  createSong,
+  createSong, getSongs
 };
