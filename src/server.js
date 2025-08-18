@@ -4,6 +4,7 @@ const {StatusCodes} = require('http-status-codes');
 const dotenv = require('dotenv');
 const userRouter = require('./routes/userRoutes');
 const artistRouter = require('./routes/artistRoutes');
+const albumRouter = require('./routes/albumRoutes');
 
 dotenv.config();
 
@@ -26,6 +27,8 @@ app.use(express.json());
 //Routes
 app.use("/api/users", userRouter);
 app.use("/api/artists", artistRouter);
+app.use("/api/albums", albumRouter);
+
 
 //Error handling middleware
 app.use(( req, res, next) => {

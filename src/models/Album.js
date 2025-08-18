@@ -1,40 +1,38 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 //Schema
 const albumSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, "Album title is required"],
       trim: true,
     },
     artist: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Artist',
-      required: true,
-      trim: true,
+      required: [true, "Artist is required"],
+      ref: "Artist",
     },
+    releasedDate: {
+      type: Date,
+      default: Date.now(),
+    },
+
     coverImage: {
       type: String,
       default:
-        'https://www.istockphoto.com/photo/vinyl-record-with-blank-cover-gm469724807-32179114?utm_source=pixabay&utm_medium=affiliate&utm_campaign=sponsored_image&utm_content=srp_topbannerNone_media&utm_term=music+cover',
-    },
-    releaseDate: {
-      type: Date,
-      default: Date.now,
+        "https://cdn.pixabay.com/photo/2016/11/29/12/39/recording-studio-1869560_1280.jpg",
     },
     songs: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Song',
+        ref: "Song",
       },
     ],
-    genres: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
+    genre: {
+      type: String,
+      trim: true,
+    },
     likes: {
       type: Number,
       default: 0,
@@ -53,6 +51,7 @@ const albumSchema = new mongoose.Schema(
   }
 );
 
-const Album = mongoose.model('Album', albumSchema);
+//Compile to for the model
+const Album = mongoose.model("Album", albumSchema);
 
 module.exports = Album;
