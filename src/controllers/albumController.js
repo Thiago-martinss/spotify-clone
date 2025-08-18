@@ -112,6 +112,50 @@ const getAlbumsById = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(album);
 });
 
+const updateAlbum = asyncHandler(async (req, res) => {
+  const { title, releasedDate, genre, description, isExplicit } = req.body;
+  const album = await Album.findById(req.params.id);
+  if (!album) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error("Album not found");
+  }
+  //Update album details
+  album.title = title || album.title;
+  album.releasedDate = releasedDate || album.releasedDate;
+  album.genre = genre || album.genre;
+  album.description = description || album.description;
+  album.isExplicit =
+    isExplicit !== undefined ? isExplicit === "true" : album.isExplicit;
+
+  //Update image if provided
+  if (req.file) {
+    const result = await uploadToCloudinary(req.file.path, "spotify/albums");
+    album.coverImage = result.secure_url;
+  }
+  //reSave
+  const updatedAlbum = await album.save();
+  res.status(StatusCodes.OK).json(updatedAlbum);
+});
+
+const deleteAlbum = asyncHandler(async (req, res) => {
+  const album = await Album.findById(req.params.id);
+  if (!album) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error("Album not found");
+  }
+  // Remove album from artist's albums
+  await Artist.updateOne(
+    { _id: album.artist },
+    { $pull: { albums: album._id } }
+  );
+  // Update songs to remove album reference
+  await Song.updateMany({ album: album._id }, { $unset: { album: 1 } });
+  await album.deleteOne();
+  res.status(StatusCodes.OK).json({
+    message: "Album removed",
+  });
+});
+
 module.exports = {
-  createAlbum, getAlbums, getAlbumsById
+  createAlbum, getAlbums, getAlbumsById, updateAlbum
 };
