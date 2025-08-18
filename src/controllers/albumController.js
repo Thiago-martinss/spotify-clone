@@ -68,6 +68,38 @@ const createAlbum = asyncHandler(async (req, res) => {
   res.status(StatusCodes.CREATED).json(album);
 });
 
+const getAlbums = asyncHandler(async (req, res) => {
+  const { genre, artist, search, page = 1, limit = 10 } = req.query;
+  //Build filter object
+  const filter = {};
+  if (genre) filter.genre = genre;
+  if (artist) filter.artist = artist;
+  if (search) {
+    filter.$or = [
+      { title: { $regex: search, $options: "i" } },
+      { genre: { $regex: search, $options: "i" } },
+      { description: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  //Count total albums with filter
+  const count = await Album.countDocuments(filter);
+  //Pagination
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+  //Get albums
+  const albums = await Album.find(filter)
+    .sort({ releaseDate: -1 })
+    .limit(parseInt(limit))
+    .skip(skip)
+    .populate("artist", "name image");
+  res.status(StatusCodes.OK).json({
+    albums,
+    page: parseInt(page),
+    pages: Math.ceil(count / parseInt(limit)),
+    totalAlbums: count,
+  });
+});
+
 module.exports = {
-  createAlbum,
+  createAlbum, getAlbums,
 };
