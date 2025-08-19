@@ -5,7 +5,9 @@ const {
   getSongs,
   getSongById,
   updateSong,
-  deleteSong
+  deleteSong,
+  getTopSongs,
+  getNewReleases
 } = require('../controllers/songController');
 const upload = require('../middlewares/upload');
 
@@ -19,6 +21,8 @@ const songUpload = upload.fields([
 //Public Routes
 songRouter.get('/', getSongs);
 songRouter.get('/:id', getSongById);
+songRouter.get('/top', getTopSongs);
+songRouter.get("/new-releases", getNewReleases);
 
 //Admin Routes
 songRouter.post('/', protect, isAdmin, songUpload, createSong);

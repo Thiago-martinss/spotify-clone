@@ -138,7 +138,7 @@ const updateSong = asyncHandler(async (req, res) => {
   const song = await Song.findById(req.params.id);
   if (!song) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error("Song not found");
+    throw new Error('Song not found');
   }
   //Update song details
   song.title = title || song.title;
@@ -148,7 +148,7 @@ const updateSong = asyncHandler(async (req, res) => {
   song.artist = artistId || song.artist;
   song.duration = duration || song.duration;
   song.isExplicit =
-    isExplicit !== undefined ? isExplicit === "true" : song.isExplicit;
+    isExplicit !== undefined ? isExplicit === 'true' : song.isExplicit;
   song.featuredArtists = featuredArtists
     ? JSON.parse(featuredArtists)
     : song.featuredArtists;
@@ -156,7 +156,7 @@ const updateSong = asyncHandler(async (req, res) => {
   if (req.files && req.files.cover) {
     const imageResult = await uploadToCloudinary(
       req.files.cover[0].path,
-      "spotify/covers"
+      'spotify/covers'
     );
     song.coverImage = imageResult.secure_url;
   }
@@ -165,7 +165,7 @@ const updateSong = asyncHandler(async (req, res) => {
   if (req.files && req.files.audio) {
     const audioResult = await uploadToCloudinary(
       req.files.audio[0].path,
-      "spotify/songs"
+      'spotify/songs'
     );
     song.audioUrl = audioResult.secure_url;
   }
@@ -178,7 +178,7 @@ const deleteSong = asyncHandler(async (req, res) => {
   const song = await Song.findById(req.params.id);
   if (!song) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error("Song not found");
+    throw new Error('Song not found');
   }
   // Remove song from artist's songs
   await Artist.updateOne({ _id: song.artist }, { $pull: { songs: song._id } });
@@ -188,14 +188,35 @@ const deleteSong = asyncHandler(async (req, res) => {
     await Album.updateOne({ _id: song.album }, { $pull: { songs: song._id } });
   }
   await song.deleteOne();
-  res.status(StatusCodes.OK).json({ message: "Song removed" });
+  res.status(StatusCodes.OK).json({ message: 'Song removed' });
 });
 
+const getTopSongs = asyncHandler(async (req, res) => {
+  const { limit = 10 } = req.query;
+  const songs = await Song.find()
+    .sort({ plays: -1 })
+    .limit(limit)
+    .populate('artist', 'name image')
+    .populate('album', 'title, coverImage');
+  res.status(StatusCodes.OK).json(songs);
+});
+
+const getNewReleases = asyncHandler(async (req, res) => {
+  const { limit = 10 } = req.query;
+  const songs = await Song.find()
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .populate("artist", "name image")
+    .populate("album", "title, coverImage");
+  res.status(StatusCodes.OK).json(songs);
+});
 
 module.exports = {
   createSong,
-  getSongs, 
+  getSongs,
   getSongById,
   updateSong,
-  deleteSong
+  deleteSong,
+  getTopSongs,
+  getNewReleases,
 };
