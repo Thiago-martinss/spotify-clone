@@ -5,6 +5,7 @@ const {
   getSongs,
   getSongById,
   updateSong,
+  deleteSong
 } = require('../controllers/songController');
 const upload = require('../middlewares/upload');
 
@@ -22,5 +23,6 @@ songRouter.get('/:id', getSongById);
 //Admin Routes
 songRouter.post('/', protect, isAdmin, songUpload, createSong);
 songRouter.put('/:id', protect, isAdmin, songUpload, updateSong);
+songRouter.delete('/:id', protect, isAdmin, deleteSong);
 
 module.exports = songRouter;

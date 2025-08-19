@@ -174,10 +174,28 @@ const updateSong = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(updatedSong);
 });
 
+const deleteSong = asyncHandler(async (req, res) => {
+  const song = await Song.findById(req.params.id);
+  if (!song) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error("Song not found");
+  }
+  // Remove song from artist's songs
+  await Artist.updateOne({ _id: song.artist }, { $pull: { songs: song._id } });
+
+  // Remove song from album if it belongs to one
+  if (song.album) {
+    await Album.updateOne({ _id: song.album }, { $pull: { songs: song._id } });
+  }
+  await song.deleteOne();
+  res.status(StatusCodes.OK).json({ message: "Song removed" });
+});
+
 
 module.exports = {
   createSong,
   getSongs, 
   getSongById,
-  updateSong
+  updateSong,
+  deleteSong
 };
