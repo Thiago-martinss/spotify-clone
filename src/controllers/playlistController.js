@@ -49,6 +49,36 @@ const createPlaylist = asyncHandler(async (req, res) => {
   res.status(StatusCodes.CREATED).json(playlist);
 });
 
+const getPlaylists = asyncHandler(async (req, res) => {
+  const { search, page = 1, limit = 10 } = req.query;
+  //Build filter object
+  const filter = { isPublic: true }; //only public playlists
+  if (search) {
+    filter.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { description: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  //Count total playlists with filter
+  const count = await Playlist.countDocuments(filter);
+  //Pagination
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+  //Get playlists
+  const playlists = await Playlist.find(filter)
+    .sort({ followers: -1 })
+    .limit(parseInt(limit))
+    .skip(skip)
+    .populate("creator", "name profilePicture")
+    .populate("collaborators", "name profilePicture");
+  res.status(StatusCodes.OK).json({
+    playlists,
+    page: parseInt(page),
+    pages: Math.ceil(count / parseInt(limit)),
+    totalPlaylists: count,
+  });
+});
+
 module.exports = {
-  createPlaylist,
+  createPlaylist, getPlaylists
 };
