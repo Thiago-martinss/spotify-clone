@@ -123,8 +123,61 @@ const getSongById = asyncHandler(async (req, res) => {
   }
 });
 
+const updateSong = asyncHandler(async (req, res) => {
+  const {
+    title,
+    artistId,
+    albumId,
+    duration,
+    genre,
+    lyrics,
+    isExplicit,
+    featuredArtists,
+  } = req.body;
+
+  const song = await Song.findById(req.params.id);
+  if (!song) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error("Song not found");
+  }
+  //Update song details
+  song.title = title || song.title;
+  song.album = albumId || song.album;
+  song.genre = genre || song.genre;
+  song.lyrics = lyrics || song.lyrics;
+  song.artist = artistId || song.artist;
+  song.duration = duration || song.duration;
+  song.isExplicit =
+    isExplicit !== undefined ? isExplicit === "true" : song.isExplicit;
+  song.featuredArtists = featuredArtists
+    ? JSON.parse(featuredArtists)
+    : song.featuredArtists;
+  //Update cover image if provided
+  if (req.files && req.files.cover) {
+    const imageResult = await uploadToCloudinary(
+      req.files.cover[0].path,
+      "spotify/covers"
+    );
+    song.coverImage = imageResult.secure_url;
+  }
+
+  //Update audio file if provided
+  if (req.files && req.files.audio) {
+    const audioResult = await uploadToCloudinary(
+      req.files.audio[0].path,
+      "spotify/songs"
+    );
+    song.audioUrl = audioResult.secure_url;
+  }
+
+  const updatedSong = await song.save();
+  res.status(StatusCodes.OK).json(updatedSong);
+});
+
+
 module.exports = {
   createSong,
   getSongs, 
-  getSongById
+  getSongById,
+  updateSong
 };
