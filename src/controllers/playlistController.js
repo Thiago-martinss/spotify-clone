@@ -79,6 +79,15 @@ const getPlaylists = asyncHandler(async (req, res) => {
   });
 });
 
+const getUserPlaylists = asyncHandler(async (req, res) => {
+  const playlists = await Playlist.find({
+    $or: [{ creator: req.user._id }, { collaborators: req.user._id }],
+  })
+    .sort({ createdAt: -1 })
+    .populate("creator", "name profilePicture");
+  res.status(StatusCodes.OK).json(playlists);
+});
+
 module.exports = {
-  createPlaylist, getPlaylists
+  createPlaylist, getPlaylists, getUserPlaylists
 };
