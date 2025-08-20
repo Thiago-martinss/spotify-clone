@@ -196,6 +196,34 @@ const addSongsToPlaylist = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(playlist);
 });
 
+const removeFromPlaylist = asyncHandler(async (req, res) => {
+  //find the playlist
+  const playlist = await Playlist.findById(req.params.id);
+  if (!playlist) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error("playlist not found");
+  }
+
+  // Check if current user is creator or collaborator
+  if (
+    !playlist.creator.equals(req.user._id) &&
+    !playlist.collaborators.some((collab) => collab.equals(req.user._id))
+  ) {
+    res.status(StatusCodes.FORBIDDEN);
+    throw new Error("Not authorized to modify this playlist");
+  }
+  const songId = req.params.songId;
+  //Check if song is in the playlist
+  if (!playlist.songs.includes(songId)) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error("Song is not in the playlist");
+  }
+  //Remove song from playlist
+  playlist.songs = playlist.songs.filter((id) => id.toString() !== songId);
+  await playlist.save();
+  res.status(StatusCodes.OK).json({ message: "Song removed from playlist" });
+});
+
 module.exports = {
   createPlaylist,
   getPlaylists,
@@ -204,5 +232,6 @@ module.exports = {
   updatePlaylist,
   deletePlaylist,
   addSongsToPlaylist,
+  removeFromPlaylist
 
 };

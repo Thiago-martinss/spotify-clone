@@ -8,6 +8,7 @@ const {
   updatePlaylist,
   deletePlaylist,
   addSongsToPlaylist,
+  removeFromPlaylist,
 } = require('../controllers/playlistController');
 const upload = require('../middlewares/upload');
 
@@ -21,15 +22,15 @@ playlistRouter.get('/:id', getPlaylistById);
 playlistRouter.get('/user/me', protect, getUserPlaylists);
 
 playlistRouter.put(
-  "/:id",
+  '/:id',
   protect,
-  upload.single("coverImage"),
+  upload.single('coverImage'),
   updatePlaylist
 );
 
-playlistRouter.delete("/:id", protect, deletePlaylist);
-
-playlistRouter.put("/:id/add-songs", protect, addSongsToPlaylist);
+playlistRouter.delete('/:id', protect, deletePlaylist);
+playlistRouter.put('/:id/add-songs', protect, addSongsToPlaylist);
+playlistRouter.put("/:id/remove-song/:songId", protect, removeFromPlaylist);
 
 //Admin
 playlistRouter.post(
