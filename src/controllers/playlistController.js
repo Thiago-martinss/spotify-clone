@@ -259,6 +259,39 @@ const addCollaborator = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(playlist);
 });
 
+const removeCollaborator = asyncHandler(async (req, res) => {
+  const userId = req.body.userId;
+  if (!userId) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error("User ID is required");
+  }
+
+  //find the playlist
+  const playlist = await Playlist.findById(req.params.id);
+  if (!playlist) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error("Playlist not found");
+  }
+  // Only creator can remove collaborators
+  if (!playlist.creator.equals(req.user._id)) {
+    res.status(StatusCodes.FORBIDDEN);
+    throw new Error("Only the playlist creator can remove collaborators");
+  }
+
+  // Check if user is  a collaborator
+  if (!playlist.collaborators.includes(userId)) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error("User is not a collaborator");
+  }
+  //Remove user from collaborator
+  playlist.collaborators = playlist.collaborators.filter(
+    (id) => id.toString() !== userId
+  );
+  await playlist.save();
+  res.status(StatusCodes.OK).json(playlist);
+});
+
+
 module.exports = {
   createPlaylist,
   getPlaylists,
@@ -269,5 +302,7 @@ module.exports = {
   addSongsToPlaylist,
   removeFromPlaylist,
   addCollaborator,
+  removeCollaborator,
+  
 
 };
