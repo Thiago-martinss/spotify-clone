@@ -6,6 +6,8 @@ const {
   getUserPlaylists,
   getPlaylistById,
   updatePlaylist,
+  deletePlaylist,
+  addSongsToPlaylist,
 } = require('../controllers/playlistController');
 const upload = require('../middlewares/upload');
 
@@ -24,6 +26,10 @@ playlistRouter.put(
   upload.single("coverImage"),
   updatePlaylist
 );
+
+playlistRouter.delete("/:id", protect, deletePlaylist);
+
+playlistRouter.put("/:id/add-songs", protect, addSongsToPlaylist);
 
 //Admin
 playlistRouter.post(

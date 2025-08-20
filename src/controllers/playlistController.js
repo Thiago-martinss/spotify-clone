@@ -137,10 +137,72 @@ const updatePlaylist = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(playlist);
 });
 
+const deletePlaylist = asyncHandler(async (req, res) => {
+  const playlist = await Playlist.findById(req.params.id);
+  if (!playlist) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('Playlist not found');
+  }
+  //Only creator can delete it's own playlist
+  if (!playlist.creator.equals(req.user._id)) {
+    res.status(StatusCodes.FORBIDDEN);
+    throw new Error('Not Authorized to delete this playlist');
+  }
+  await playlist.deleteOne();
+  res.status(StatusCodes.OK).json({
+    message: 'Playlist removed',
+  });
+});
+
+const addSongsToPlaylist = asyncHandler(async (req, res) => {
+  const { songIds } = req.body;
+  if (!songIds || !Array.isArray(songIds)) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Song IDS are required');
+  }
+  //find the playlist
+  const playlist = await Playlist.findById(req.params.id);
+  if (!playlist) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('playlist not found');
+  }
+  // Check if current user is creator or collaborator
+  if (
+    !playlist.creator.equals(req.user._id) &&
+    !playlist.collaborators.some((collab) => collab.equals(req.user._id))
+  ) {
+    res.status(StatusCodes.FORBIDDEN);
+    throw new Error('Not authorized to modify this playlist');
+  }
+  //Add songs to playlist
+  for (const songId of songIds) {
+    //check if song exist
+    const song = await Song.findById(songId);
+
+    if (!song) {
+      continue; //Skip if song doesn't exists
+    }
+
+    //Check if song already in a playlist
+    if (playlist.songs.includes(songId)) {
+      continue; //Skip if song is already in the playlist
+    }
+    //Add song to playlist
+    playlist.songs.push(songId);
+    console.log(playlist);
+  }
+  await playlist.save();
+
+  res.status(StatusCodes.OK).json(playlist);
+});
+
 module.exports = {
   createPlaylist,
   getPlaylists,
   getUserPlaylists,
   getPlaylistById,
   updatePlaylist,
+  deletePlaylist,
+  addSongsToPlaylist,
+
 };
