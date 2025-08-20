@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
 const Artist = require('../models/Artist');
+const User = require("../models/User");
 const Song = require('../models/Song');
 const { uploadToCloudinary } = require('../utils/cloudinaryUpload');
 const Playlist = require('../models/Playlist');
@@ -224,6 +225,40 @@ const removeFromPlaylist = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json({ message: "Song removed from playlist" });
 });
 
+const addCollaborator = asyncHandler(async (req, res) => {
+  const userId = req?.body?.userId;
+  if (!userId) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error("User ID is required");
+  }
+  // Check if user exists
+  const user = await User.findById(userId);
+  if (!user) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error("User not found");
+  }
+  const playlist = await Playlist.findById(req.params.id);
+  if (!playlist) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error("Playlist not found");
+  }
+  // Only creator can add collaborators
+  if (!playlist.creator.equals(req.user._id)) {
+    res.status(StatusCodes.FORBIDDEN);
+    throw new Error("Only the playlist creator can add collaborators");
+  }
+  // Check if user is already a collaborator
+  if (playlist.collaborators.includes(userId)) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error("User is already a collaborator");
+  }
+  // Add user to collaborators
+  playlist.collaborators.push(userId);
+  await playlist.save();
+
+  res.status(StatusCodes.OK).json(playlist);
+});
+
 module.exports = {
   createPlaylist,
   getPlaylists,
@@ -232,6 +267,7 @@ module.exports = {
   updatePlaylist,
   deletePlaylist,
   addSongsToPlaylist,
-  removeFromPlaylist
+  removeFromPlaylist,
+  addCollaborator,
 
 };

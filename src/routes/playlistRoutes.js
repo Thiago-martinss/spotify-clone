@@ -9,6 +9,7 @@ const {
   deletePlaylist,
   addSongsToPlaylist,
   removeFromPlaylist,
+  addCollaborator,
 } = require('../controllers/playlistController');
 const upload = require('../middlewares/upload');
 
@@ -31,6 +32,7 @@ playlistRouter.put(
 playlistRouter.delete('/:id', protect, deletePlaylist);
 playlistRouter.put('/:id/add-songs', protect, addSongsToPlaylist);
 playlistRouter.put("/:id/remove-song/:songId", protect, removeFromPlaylist);
+playlistRouter.put("/:id/add-collaborator", protect, addCollaborator);
 
 //Admin
 playlistRouter.post(
